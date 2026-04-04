@@ -95,7 +95,7 @@ export default function StickyNote({
   const style: React.CSSProperties = {
     transform: combinedTransform,
     backgroundColor: noteColor,
-    opacity: isDragging ? 0.25 : done ? 0.65 : 1,
+    opacity: isDragging ? 0 : done ? 0.65 : 1,
     boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
     cursor: isDragging ? "grabbing" : "grab",
   };
@@ -108,7 +108,7 @@ export default function StickyNote({
         {...listeners}
         {...attributes}
         className={[
-          "relative w-44 min-h-32 rounded-xl px-4 py-3.5 select-none group dark:brightness-90",
+          "relative w-44 min-h-32 rounded-xl px-4 py-3.5 select-none group",
           "transition-shadow duration-150 ease-out",
           !isDragging && !isOverlay && "hover:shadow-md",
         ]
