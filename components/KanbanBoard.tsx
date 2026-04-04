@@ -14,6 +14,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import type { Task, Category } from "@/types";
 import KanbanColumn from "./KanbanColumn";
 import StickyNote from "./StickyNote";
@@ -110,28 +111,59 @@ export default function KanbanBoard({
 
     if (!over) return;
 
-    const taskId = String(active.id);
-    const newStatus = String(over.id) as Task["status"];
+    const activeId = String(active.id);
+    const overId = String(over.id);
 
-    if (!["todo", "ongoing", "done"].includes(newStatus)) return;
+    if (activeId === overId) return;
 
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task || task.status === newStatus) return;
+    const draggedTask = tasks.find((t) => t.id === activeId);
+    if (!draggedTask) return;
 
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
-    );
+    const overTask = tasks.find((t) => t.id === overId);
 
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("tasks")
-      .update({ status: newStatus })
-      .eq("id", taskId);
+    if (overTask && draggedTask.status === overTask.status) {
+      // Same-column reorder
+      const columnTasks = tasks
+        .filter((t) => t.status === draggedTask.status)
+        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
-    if (error) {
+      const oldIndex = columnTasks.findIndex((t) => t.id === activeId);
+      const newIndex = columnTasks.findIndex((t) => t.id === overId);
+      const reordered = arrayMove(columnTasks, oldIndex, newIndex).map((t, i) => ({
+        ...t,
+        position: i,
+      }));
+
+      setTasks((prev) => [
+        ...prev.filter((t) => t.status !== draggedTask.status),
+        ...reordered,
+      ]);
+
+      const supabase = createClient();
+      reordered.forEach((t) => {
+        supabase.from("tasks").update({ position: t.position }).eq("id", t.id);
+      });
+    } else {
+      // Cross-column move — over is a task in another column or a column drop zone
+      const newStatus = (overTask ? overTask.status : overId) as Task["status"];
+      if (!["todo", "ongoing", "done"].includes(newStatus)) return;
+      if (draggedTask.status === newStatus) return;
+
       setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, status: task.status } : t))
+        prev.map((t) => (t.id === activeId ? { ...t, status: newStatus } : t))
       );
+
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: newStatus })
+        .eq("id", activeId);
+
+      if (error) {
+        setTasks((prev) =>
+          prev.map((t) => (t.id === activeId ? { ...t, status: draggedTask.status } : t))
+        );
+      }
     }
   }
 
@@ -321,7 +353,10 @@ export default function KanbanBoard({
                 id={col.id}
                 title={col.label}
                 dot={col.dot}
-                tasks={filteredTasks.filter((t) => t.status === col.id)}
+                tasks={filteredTasks
+                  .filter((t) => t.status === col.id)
+                  .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                }
                 categories={categories}
                 onTaskUpdated={handleTaskUpdated}
                 onTaskDeleted={handleTaskDeleted}

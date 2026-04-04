@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task, Category } from "@/types";
 import { createClient } from "@/lib/supabase/client";
@@ -47,8 +47,15 @@ export default function StickyNote({
   const [editOpen, setEditOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: isOverlay ? `overlay-${task.id}` : task.id,
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
     disabled: isOverlay,
   });
 
@@ -94,6 +101,7 @@ export default function StickyNote({
 
   const style: React.CSSProperties = {
     transform: combinedTransform,
+    transition,
     backgroundColor: noteColor,
     opacity: isDragging ? 0 : done ? 0.65 : 1,
     boxShadow: "0 1px 3px rgba(0,0,0,0.08)",

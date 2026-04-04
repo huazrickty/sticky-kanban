@@ -1,6 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import type { Task, Category } from "@/types";
 import StickyNote from "./StickyNote";
 
@@ -57,16 +58,18 @@ export default function KanbanColumn({
           outlineOffset: "-4px",
         }}
       >
-        {tasks.map((task) => (
-          <StickyNote
-            key={task.id}
-            task={task}
-            category={categories.find((c) => c.id === task.category_id) ?? null}
-            categories={categories}
-            onTaskUpdated={onTaskUpdated}
-            onTaskDeleted={onTaskDeleted}
-          />
-        ))}
+        <SortableContext items={tasks.map((t) => t.id)} strategy={rectSortingStrategy}>
+          {tasks.map((task) => (
+            <StickyNote
+              key={task.id}
+              task={task}
+              category={categories.find((c) => c.id === task.category_id) ?? null}
+              categories={categories}
+              onTaskUpdated={onTaskUpdated}
+              onTaskDeleted={onTaskDeleted}
+            />
+          ))}
+        </SortableContext>
 
         {tasks.length === 0 && !isOver && (
           <div className="w-full flex flex-col items-center justify-center gap-3 py-8 select-none">
