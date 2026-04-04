@@ -109,10 +109,10 @@ export default function CategoriesPage() {
 
         <div className="flex items-center gap-4">
           <button
-            onClick={() => router.push("/board")}
+            onClick={() => router.push("/projects")}
             className="text-xs font-medium text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
           >
-            Board
+            Projects
           </button>
           <span className="text-xs font-semibold text-stone-700 dark:text-stone-200 border-b border-stone-700 dark:border-stone-200 pb-0.5">
             Categories

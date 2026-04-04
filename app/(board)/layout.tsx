@@ -3,9 +3,5 @@ export default function BoardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen bg-stone-50">
-      {children}
-    </div>
-  );
+  return <div className="animate-fadeIn">{children}</div>;
 }
