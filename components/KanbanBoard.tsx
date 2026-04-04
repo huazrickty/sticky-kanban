@@ -58,8 +58,6 @@ export default function KanbanBoard({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-
   useEffect(() => setMounted(true), []);
 
   const visibleName = displayName || userEmail;
@@ -97,8 +95,6 @@ export default function KanbanBoard({
   function handleDragStart(event: DragStartEvent) {
     const task = tasks.find((t) => t.id === String(event.active.id));
     setActiveTask(task ?? null);
-    setIsDragging(true);
-    document.body.classList.add("dragging-active");
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
@@ -106,15 +102,11 @@ export default function KanbanBoard({
 
   function handleDragCancel() {
     setActiveTask(null);
-    setIsDragging(false);
-    document.body.classList.remove("dragging-active");
   }
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveTask(null);
-    setIsDragging(false);
-    document.body.classList.remove("dragging-active");
 
     if (!over) return;
 
