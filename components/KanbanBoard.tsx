@@ -339,11 +339,12 @@ export default function KanbanBoard({
 
           <DragOverlay dropAnimation={null} style={{ background: "none", boxShadow: "none" }}>
             {activeTask ? (
-              <div style={{ opacity: 0.85, transform: "rotate(2deg) scale(1.02)", cursor: "grabbing" }}>
+              <div style={{ opacity: 0.92, transform: "rotate(2deg) scale(1.02)", cursor: "grabbing" }}>
                 <StickyNote
                   task={activeTask}
-                  category={categories.find((c) => c.id === activeTask.category_id) ?? null}
+                  category={activeCategory}
                   categories={categories}
+                  isOverlay
                   onTaskUpdated={() => {}}
                   onTaskDeleted={() => {}}
                 />
