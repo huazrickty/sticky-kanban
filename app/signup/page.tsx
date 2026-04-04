@@ -56,28 +56,23 @@ export default function SignupPage() {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
             </div>
             <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
-              Check your email
+              Account created!
             </h2>
             <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
-              We sent a confirmation link to{" "}
-              <span className="font-medium text-stone-700 dark:text-stone-300">{email}</span>.
-              Click it to activate your account.
+              You can now sign in.
             </p>
-          </div>
-          <p className="mt-5 text-center text-sm text-stone-500 dark:text-stone-400">
-            Already confirmed?{" "}
             <Link
               href="/login"
-              className="font-medium text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 underline underline-offset-2 transition"
+              className="mt-6 inline-block w-full rounded-lg bg-stone-800 dark:bg-stone-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-stone-700 dark:hover:bg-stone-600 transition text-center"
             >
               Sign in
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     );
