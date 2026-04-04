@@ -337,16 +337,17 @@ export default function KanbanBoard({
             ))}
           </div>
 
-          <DragOverlay dropAnimation={{ duration: 180, easing: "ease" }}>
+          <DragOverlay dropAnimation={null}>
             {activeTask ? (
-              <StickyNote
-                task={activeTask}
-                category={activeCategory}
-                categories={[]}
-                isOverlay
-                onTaskUpdated={() => {}}
-                onTaskDeleted={() => {}}
-              />
+              <div style={{ opacity: 0.85, transform: "rotate(2deg) scale(1.02)", cursor: "grabbing" }}>
+                <StickyNote
+                  task={activeTask}
+                  category={categories.find((c) => c.id === activeTask.category_id) ?? null}
+                  categories={categories}
+                  onTaskUpdated={() => {}}
+                  onTaskDeleted={() => {}}
+                />
+              </div>
             ) : null}
           </DragOverlay>
         </DndContext>
