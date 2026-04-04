@@ -96,9 +96,7 @@ export default function StickyNote({
     transform: combinedTransform,
     backgroundColor: noteColor,
     opacity: isDragging ? 0.25 : done ? 0.65 : 1,
-    boxShadow: isOverlay
-      ? "4px 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10)"
-      : "1px 2px 4px rgba(0,0,0,0.06)",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
     cursor: isDragging ? "grabbing" : "grab",
   };
 
