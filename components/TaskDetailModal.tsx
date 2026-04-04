@@ -55,10 +55,10 @@ export default function TaskDetailModal({
   const [description, setDescription] = useState(initialTask.description ?? "");
   const [editTaskOpen, setEditTaskOpen] = useState(false);
   const [savingStatus, setSavingStatus] = useState(false);
-  const [savingDesc, setSavingDesc] = useState(false);
+  const [savedIndicator, setSavedIndicator] = useState(false);
 
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const descTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const category = categories.find((c) => c.id === task.category_id) ?? null;
   const formattedDate = formatDate(task.due_date);
@@ -78,12 +78,54 @@ export default function TaskDetailModal({
     if (editingTitle) titleInputRef.current?.focus();
   }, [editingTitle]);
 
-  // Cleanup debounce timer on unmount
+  // Auto-save description with 800ms debounce
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (description !== (task.description ?? "")) {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from("tasks")
+          .update({ description: description || null })
+          .eq("id", task.id);
+        if (!error) {
+          const updated = { ...task, description: description || null };
+          setTask(updated);
+          onTaskUpdated(updated);
+          showSaved();
+        }
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [description]);
+
+  // Cleanup saved indicator timer on unmount
   useEffect(() => {
     return () => {
-      if (descTimer.current) clearTimeout(descTimer.current);
+      if (savedTimer.current) clearTimeout(savedTimer.current);
     };
   }, []);
+
+  function showSaved() {
+    setSavedIndicator(true);
+    if (savedTimer.current) clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setSavedIndicator(false), 2000);
+  }
+
+  async function saveDescription() {
+    if (description === (task.description ?? "")) return;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("tasks")
+      .update({ description: description || null })
+      .eq("id", task.id);
+    if (!error) {
+      const updated = { ...task, description: description || null };
+      setTask(updated);
+      onTaskUpdated(updated);
+      showSaved();
+    }
+  }
 
   async function saveTitle() {
     const trimmed = titleValue.trim();
@@ -122,20 +164,6 @@ export default function TaskDetailModal({
       onTaskUpdated(updated);
     }
     setSavingStatus(false);
-  }
-
-  function handleDescChange(value: string) {
-    setDescription(value);
-    if (descTimer.current) clearTimeout(descTimer.current);
-    descTimer.current = setTimeout(async () => {
-      setSavingDesc(true);
-      const supabase = createClient();
-      await supabase
-        .from("tasks")
-        .update({ description: value || null })
-        .eq("id", task.id);
-      setSavingDesc(false);
-    }, 800);
   }
 
   async function handleDelete() {
@@ -279,15 +307,22 @@ export default function TaskDetailModal({
               <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide">
                 Notes
               </span>
-              {savingDesc && (
-                <span className="text-xs text-stone-400 dark:text-stone-500 italic">
-                  Saving…
-                </span>
-              )}
+              <span
+                className="text-xs text-emerald-500 dark:text-emerald-400 transition-opacity duration-300"
+                style={{ opacity: savedIndicator ? 1 : 0 }}
+              >
+                Saved ✓
+              </span>
             </div>
             <textarea
               value={description}
-              onChange={(e) => handleDescChange(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  saveDescription();
+                }
+              }}
               placeholder="Add notes..."
               className="w-full resize-none rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/60 px-3.5 py-3 text-sm text-stone-700 dark:text-stone-300 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-stone-300 dark:focus:border-stone-600 focus:ring-2 focus:ring-stone-100 dark:focus:ring-stone-700/50 transition min-h-[120px]"
             />
