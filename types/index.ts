@@ -1,6 +1,15 @@
+export type Project = {
+  id: string;
+  user_id: string;
+  name: string;
+  due_date: string | null;
+  created_at: string;
+};
+
 export type Task = {
   id: string;
   user_id: string;
+  project_id: string;
   category_id: string | null;
   title: string;
   status: "todo" | "ongoing" | "done";

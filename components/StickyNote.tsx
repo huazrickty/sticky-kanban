@@ -52,7 +52,6 @@ export default function StickyNote({
     disabled: isOverlay,
   });
 
-  // Close menu when clicking outside
   useEffect(() => {
     if (!menuOpen) return;
     function handleClickOutside(e: MouseEvent) {
@@ -103,7 +102,7 @@ export default function StickyNote({
         {...listeners}
         {...attributes}
         className={[
-          "relative rounded-xl px-4 py-3.5 select-none group",
+          "relative rounded-xl px-4 py-3.5 select-none group dark:brightness-90",
           "transition-transform duration-150 ease-out",
           !isDragging && !isOverlay && "hover:-rotate-1 hover:shadow-md",
           isOverlay && "-rotate-2",
@@ -111,12 +110,11 @@ export default function StickyNote({
           .filter(Boolean)
           .join(" ")}
       >
-        {/* Three-dot menu — hidden until hover, not shown on overlay */}
+        {/* Three-dot menu */}
         {!isOverlay && (
           <div
             ref={menuRef}
             className="absolute top-2 right-2"
-            // Stop pointer events from reaching the drag listeners
             onPointerDown={(e) => e.stopPropagation()}
           >
             <button
@@ -126,9 +124,9 @@ export default function StickyNote({
               }}
               className={[
                 "w-6 h-6 flex items-center justify-center rounded-md text-stone-400",
-                "opacity-0 group-hover:opacity-100 transition-opacity duration-100",
-                "hover:bg-black/10 hover:text-stone-600",
-                menuOpen && "opacity-100",
+                "opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-100",
+                "hover:bg-black/10 active:bg-black/10 hover:text-stone-600 active:text-stone-600",
+                menuOpen && "md:opacity-100",
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -141,24 +139,23 @@ export default function StickyNote({
               </svg>
             </button>
 
-            {/* Dropdown */}
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-20 w-32 bg-white rounded-xl shadow-lg border border-stone-100 py-1 overflow-hidden"
+                className="absolute right-0 top-7 z-20 w-32 bg-white dark:bg-stone-800 rounded-xl shadow-lg border border-stone-100 dark:border-stone-700 py-1 overflow-hidden"
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 <button
                   onClick={handleEditClick}
-                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50 transition-colors flex items-center gap-2"
+                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-stone-600 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors flex items-center gap-2"
                 >
-                  <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <svg className="w-3.5 h-3.5 text-stone-400 dark:text-stone-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
                   </svg>
                   Edit
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
+                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -222,7 +219,6 @@ export default function StickyNote({
         )}
       </div>
 
-      {/* Edit modal — rendered outside the draggable div */}
       {editOpen && (
         <EditTaskModal
           task={task}
