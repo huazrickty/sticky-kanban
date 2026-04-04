@@ -15,6 +15,7 @@ export type Task = {
   status: "todo" | "ongoing" | "done";
   due_date: string | null;
   position: number;
+  description?: string | null;
   created_at: string;
 };
 

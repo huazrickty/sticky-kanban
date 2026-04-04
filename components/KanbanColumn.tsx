@@ -17,6 +17,7 @@ interface Props {
   dot: string;
   tasks: Task[];
   categories: Category[];
+  onTaskClick: (task: Task) => void;
   onTaskUpdated: (task: Task) => void;
   onTaskDeleted: (taskId: string) => void;
 }
@@ -27,6 +28,7 @@ export default function KanbanColumn({
   dot,
   tasks,
   categories,
+  onTaskClick,
   onTaskUpdated,
   onTaskDeleted,
 }: Props) {
@@ -65,6 +67,7 @@ export default function KanbanColumn({
               task={task}
               category={categories.find((c) => c.id === task.category_id) ?? null}
               categories={categories}
+              onTaskClick={() => onTaskClick(task)}
               onTaskUpdated={onTaskUpdated}
               onTaskDeleted={onTaskDeleted}
             />

@@ -20,6 +20,7 @@ import KanbanColumn from "./KanbanColumn";
 import StickyNote from "./StickyNote";
 import AddTaskModal from "./AddTaskModal";
 import EditProfileModal from "./EditProfileModal";
+import TaskDetailModal from "./TaskDetailModal";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "./ThemeProvider";
 
@@ -52,6 +53,7 @@ export default function KanbanBoard({
   const { theme, toggleTheme } = useTheme();
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(initialDisplayName);
@@ -358,6 +360,7 @@ export default function KanbanBoard({
                   .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
                 }
                 categories={categories}
+                onTaskClick={(task) => setSelectedTask(task)}
                 onTaskUpdated={handleTaskUpdated}
                 onTaskDeleted={handleTaskDeleted}
               />
@@ -401,6 +404,23 @@ export default function KanbanBoard({
           onSuccess={(name) => {
             setDisplayName(name || null);
             setIsProfileModalOpen(false);
+          }}
+        />
+      )}
+
+      {/* Task detail modal */}
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          categories={categories}
+          onClose={() => setSelectedTask(null)}
+          onTaskUpdated={(updated) => {
+            handleTaskUpdated(updated);
+            setSelectedTask(updated);
+          }}
+          onTaskDeleted={(taskId) => {
+            handleTaskDeleted(taskId);
+            setSelectedTask(null);
           }}
         />
       )}

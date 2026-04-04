@@ -12,6 +12,7 @@ interface Props {
   category: Category | null;
   categories: Category[];
   isOverlay?: boolean;
+  onTaskClick?: () => void;
   onTaskUpdated: (task: Task) => void;
   onTaskDeleted: (taskId: string) => void;
 }
@@ -40,6 +41,7 @@ export default function StickyNote({
   category,
   categories,
   isOverlay = false,
+  onTaskClick,
   onTaskUpdated,
   onTaskDeleted,
 }: Props) {
@@ -119,9 +121,13 @@ export default function StickyNote({
           "relative w-44 min-h-32 rounded-xl px-4 py-3.5 select-none group",
           "transition-shadow duration-150 ease-out",
           !isDragging && !isOverlay && "hover:shadow-md",
+          !isOverlay && onTaskClick && "cursor-pointer",
         ]
           .filter(Boolean)
           .join(" ")}
+        onClick={() => {
+          if (!isOverlay && !isDragging && onTaskClick) onTaskClick();
+        }}
       >
         {/* Three-dot menu */}
         {!isOverlay && (
@@ -129,6 +135,7 @@ export default function StickyNote({
             ref={menuRef}
             className="absolute top-2 right-2"
             onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={(e) => {
