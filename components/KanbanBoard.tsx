@@ -322,7 +322,7 @@ export default function KanbanBoard({
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-0 overflow-y-auto md:overflow-hidden pl-2">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-0 overflow-y-auto md:overflow-visible">
             {COLUMNS.map((col) => (
               <KanbanColumn
                 key={col.id}
