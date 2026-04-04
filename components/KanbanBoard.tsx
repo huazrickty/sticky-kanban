@@ -7,7 +7,9 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  KeyboardSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -56,6 +58,7 @@ export default function KanbanBoard({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -79,19 +82,39 @@ export default function KanbanBoard({
   }
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
-    })
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 500,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
   );
 
   function handleDragStart(event: DragStartEvent) {
     const task = tasks.find((t) => t.id === String(event.active.id));
     setActiveTask(task ?? null);
+    setIsDragging(true);
+    document.body.classList.add("dragging-active");
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  }
+
+  function handleDragCancel() {
+    setActiveTask(null);
+    setIsDragging(false);
+    document.body.classList.remove("dragging-active");
   }
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveTask(null);
+    setIsDragging(false);
+    document.body.classList.remove("dragging-active");
 
     if (!over) return;
 
@@ -297,6 +320,7 @@ export default function KanbanBoard({
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-0 overflow-y-auto md:overflow-hidden">
             {COLUMNS.map((col) => (
