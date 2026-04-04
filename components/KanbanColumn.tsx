@@ -50,7 +50,7 @@ export default function KanbanColumn({
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className="flex-1 overflow-y-visible md:overflow-y-auto flex flex-col gap-3 px-4 py-4 transition-colors duration-150"
+        className="flex-1 overflow-y-visible md:overflow-y-auto flex flex-wrap gap-3 content-start px-3 py-3 transition-colors duration-150"
         style={{
           backgroundColor: isOver ? "rgba(120,113,108,0.08)" : "transparent",
           outline: isOver ? "2px dashed rgba(120,113,108,0.25)" : "2px dashed transparent",
@@ -69,7 +69,7 @@ export default function KanbanColumn({
         ))}
 
         {tasks.length === 0 && !isOver && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 py-8 select-none">
+          <div className="w-full flex flex-col items-center justify-center gap-3 py-8 select-none">
             <svg
               width="48"
               height="52"

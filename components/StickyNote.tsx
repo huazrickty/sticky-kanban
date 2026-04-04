@@ -84,13 +84,21 @@ export default function StickyNote({
   const overdue = isOverdue(task.due_date) && !done;
   const dueSoon = isDueSoon(task.due_date) && !done;
 
+  // Deterministic slight rotation based on task id — gives each note a unique tilt
+  const BASE_ROTATIONS = ["-1deg", "0.5deg", "-0.5deg"];
+  const baseRotation = isOverlay ? "-2deg" : BASE_ROTATIONS[task.id.charCodeAt(0) % 3];
+  const dndTransform = CSS.Transform.toString(transform);
+  const combinedTransform = dndTransform
+    ? `${dndTransform} rotate(${baseRotation})`
+    : `rotate(${baseRotation})`;
+
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: combinedTransform,
     backgroundColor: noteColor,
     opacity: isDragging ? 0.25 : done ? 0.65 : 1,
     boxShadow: isOverlay
       ? "4px 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.10)"
-      : "2px 4px 10px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05)",
+      : "2px 4px 8px rgba(0,0,0,0.12)",
     cursor: isDragging ? "grabbing" : "grab",
   };
 
@@ -102,10 +110,9 @@ export default function StickyNote({
         {...listeners}
         {...attributes}
         className={[
-          "relative rounded-xl px-4 py-3.5 select-none group dark:brightness-90",
-          "transition-transform duration-150 ease-out",
-          !isDragging && !isOverlay && "hover:-rotate-1 hover:shadow-md",
-          isOverlay && "-rotate-2",
+          "relative w-44 min-h-32 rounded-xl px-4 py-3.5 select-none group dark:brightness-90",
+          "transition-shadow duration-150 ease-out",
+          !isDragging && !isOverlay && "hover:shadow-md",
         ]
           .filter(Boolean)
           .join(" ")}
