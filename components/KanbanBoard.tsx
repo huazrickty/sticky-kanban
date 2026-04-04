@@ -337,7 +337,7 @@ export default function KanbanBoard({
             ))}
           </div>
 
-          <DragOverlay dropAnimation={null}>
+          <DragOverlay dropAnimation={null} style={{ background: "none", boxShadow: "none" }}>
             {activeTask ? (
               <div style={{ opacity: 0.85, transform: "rotate(2deg) scale(1.02)", cursor: "grabbing" }}>
                 <StickyNote
