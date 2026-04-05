@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import type { ProjectWithStats } from "@/app/(board)/projects/page";
 import CircularProgress from "./CircularProgress";
 
@@ -29,13 +27,12 @@ function progressColor(pct: number): string {
 
 interface Props {
   project: ProjectWithStats;
-  onEdit: () => void;
+  onUnarchive: () => void;
   onDelete: () => void;
-  onArchive: () => void;
   onClick: () => void;
 }
 
-export default function SortableProjectCard({ project, onEdit, onDelete, onArchive, onClick }: Props) {
+export default function ArchivedProjectCard({ project, onUnarchive, onDelete, onClick }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const overdue = isOverdue(project.due_date);
@@ -44,63 +41,30 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
   const cardColor = project.color ?? "#E8E8E8";
   const cardEmoji = project.emoji ?? "📋";
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: project.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0 : 1,
-    zIndex: isDragging ? 50 : "auto" as const,
-  };
-
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      className="group bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col overflow-hidden"
       onClick={onClick}
+      className="group bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl cursor-pointer flex flex-col overflow-hidden transition-all duration-150"
+      style={{ filter: "grayscale(0.6)", opacity: 0.7 }}
     >
       {/* Color accent border */}
       <div style={{ height: "4px", backgroundColor: cardColor, flexShrink: 0 }} />
 
-      {/* Top row: drag handle + left info + right (circle + menu) */}
+      {/* Top row */}
       <div
         className="flex items-start gap-3 p-5"
         style={{ backgroundColor: cardColor + "22" }}
       >
-        {/* Drag handle */}
-        <button
-          {...attributes}
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0 mt-1 text-stone-300 dark:text-stone-600 hover:text-stone-400 dark:hover:text-stone-500 cursor-grab active:cursor-grabbing transition-colors"
-          aria-label="Drag to reorder"
-          tabIndex={0}
-        >
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
-            <circle cx="5" cy="4" r="1.2" />
-            <circle cx="11" cy="4" r="1.2" />
-            <circle cx="5" cy="8" r="1.2" />
-            <circle cx="11" cy="8" r="1.2" />
-            <circle cx="5" cy="12" r="1.2" />
-            <circle cx="11" cy="12" r="1.2" />
-          </svg>
-        </button>
-
         {/* Left: emoji + name, due date, task count */}
         <div className="flex flex-col gap-2 min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span style={{ fontSize: "28px", lineHeight: 1 }}>{cardEmoji}</span>
             <h3 className="text-base font-semibold text-stone-800 dark:text-stone-100 leading-snug">
               {project.name}
             </h3>
+            <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-stone-200 dark:bg-stone-700 text-stone-500 dark:text-stone-400">
+              Archived
+            </span>
           </div>
 
           {project.due_date && (
@@ -122,7 +86,7 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
 
           <div className="flex items-center gap-1.5 mt-1">
             {total === 0 ? (
-              <span className="text-xs text-stone-400 dark:text-stone-500 italic">No tasks yet</span>
+              <span className="text-xs text-stone-400 dark:text-stone-500 italic">No tasks</span>
             ) : (
               <>
                 <svg className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -143,7 +107,6 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
         >
           <CircularProgress percentage={percentage} size={56} strokeWidth={5} />
 
-          {/* Three-dot menu */}
           <div ref={menuRef} className="relative">
             <button
               onClick={(e) => {
@@ -173,22 +136,13 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
-                  onClick={() => { setMenuOpen(false); onEdit(); }}
-                  className="w-full text-left px-3.5 py-2 text-xs font-medium text-stone-600 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                  </svg>
-                  Edit
-                </button>
-                <button
-                  onClick={() => { setMenuOpen(false); onArchive(); }}
+                  onClick={() => { setMenuOpen(false); onUnarchive(); }}
                   className="w-full text-left px-3.5 py-2 text-xs font-medium text-stone-600 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors flex items-center gap-2"
                 >
                   <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25-2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                   </svg>
-                  Archive
+                  Unarchive
                 </button>
                 <button
                   onClick={() => { setMenuOpen(false); onDelete(); }}
@@ -205,16 +159,13 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
         </div>
       </div>
 
-      {/* Bottom: progress bar — only when there are tasks */}
+      {/* Bottom: progress bar */}
       {total > 0 && (
         <div className="mt-1 px-5 pb-5">
           <div className="h-1.5 w-full bg-stone-100 dark:bg-stone-700/50 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${percentage}%`,
-                backgroundColor: progressColor(percentage),
-              }}
+              style={{ width: `${percentage}%`, backgroundColor: progressColor(percentage) }}
             />
           </div>
         </div>

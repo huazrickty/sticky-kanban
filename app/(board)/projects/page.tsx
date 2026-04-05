@@ -18,12 +18,13 @@ export default async function ProjectsPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: projects }, { data: profile }, { data: taskStats }] =
+  const [{ data: projects }, { data: profile }, { data: taskStats }, { count: archivedCount }] =
     await Promise.all([
       supabase
         .from("projects")
         .select("*")
         .eq("user_id", user.id)
+        .eq("archived", false)
         .order("position", { ascending: true }),
       supabase
         .from("profiles")
@@ -34,6 +35,11 @@ export default async function ProjectsPage() {
         .from("tasks")
         .select("project_id, status")
         .eq("user_id", user.id),
+      supabase
+        .from("projects")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("archived", true),
     ]);
 
   const enrichedProjects: ProjectWithStats[] = (projects ?? []).map((project) => {
@@ -50,6 +56,7 @@ export default async function ProjectsPage() {
       userId={user.id}
       userEmail={user.email ?? ""}
       displayName={profile?.display_name ?? null}
+      initialArchivedCount={archivedCount ?? 0}
     />
   );
 }
