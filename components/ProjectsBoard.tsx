@@ -20,29 +20,37 @@ import AddProjectModal from "./AddProjectModal";
 import EditProjectModal from "./EditProjectModal";
 import EditProfileModal from "./EditProfileModal";
 import SortableProjectCard from "./SortableProjectCard";
+import ArchivedProjectCard from "./ArchivedProjectCard";
+import Toast from "./Toast";
 
 interface Props {
   initialProjects: ProjectWithStats[];
   userId: string;
   userEmail: string;
   displayName: string | null;
+  initialArchivedCount: number;
 }
-
 
 export default function ProjectsBoard({
   initialProjects,
   userId,
   userEmail,
   displayName: initialDisplayName,
+  initialArchivedCount,
 }: Props) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [projects, setProjects] = useState<ProjectWithStats[]>(initialProjects);
+  const [archivedProjects, setArchivedProjects] = useState<ProjectWithStats[]>([]);
+  const [archivedCount, setArchivedCount] = useState(initialArchivedCount);
+  const [showArchived, setShowArchived] = useState(false);
+  const [archivedLoading, setArchivedLoading] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(initialDisplayName);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
 
   const visibleName = displayName || userEmail;
   const avatarLetter = (displayName || userEmail).charAt(0).toUpperCase();
@@ -51,6 +59,10 @@ export default function ProjectsBoard({
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 500, tolerance: 8 } })
   );
+
+  function showToast(message: string, type: "success" | "info" = "success") {
+    setToast({ message, type });
+  }
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -67,6 +79,44 @@ export default function ProjectsBoard({
     });
   }
 
+  async function fetchArchivedProjects() {
+    setArchivedLoading(true);
+    const supabase = createClient();
+    const [{ data: projectRows }, { data: taskRows }] = await Promise.all([
+      supabase
+        .from("projects")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("archived", true)
+        .order("position", { ascending: true }),
+      supabase
+        .from("tasks")
+        .select("project_id, status")
+        .eq("user_id", userId),
+    ]);
+
+    const enriched: ProjectWithStats[] = (projectRows ?? []).map((project) => {
+      const projectTasks = (taskRows ?? []).filter((t) => t.project_id === project.id);
+      const total = projectTasks.length;
+      const completed = projectTasks.filter((t) => t.status === "done").length;
+      const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+      return { ...project, total, completed, percentage };
+    });
+
+    setArchivedProjects(enriched);
+    setArchivedCount(enriched.length);
+    setArchivedLoading(false);
+  }
+
+  async function toggleShowArchived() {
+    if (!showArchived) {
+      await fetchArchivedProjects();
+      setShowArchived(true);
+    } else {
+      setShowArchived(false);
+    }
+  }
+
   async function refreshProjects() {
     const supabase = createClient();
     const [{ data: projectRows }, { data: taskRows }] = await Promise.all([
@@ -74,6 +124,7 @@ export default function ProjectsBoard({
         .from("projects")
         .select("*")
         .eq("user_id", userId)
+        .eq("archived", false)
         .order("position", { ascending: true }),
       supabase
         .from("tasks")
@@ -99,6 +150,36 @@ export default function ProjectsBoard({
     router.push("/login");
   }
 
+  async function handleArchive(project: ProjectWithStats) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("projects")
+      .update({ archived: true })
+      .eq("id", project.id);
+    if (!error) {
+      setProjects((prev) => prev.filter((p) => p.id !== project.id));
+      setArchivedCount((c) => c + 1);
+      if (showArchived) {
+        setArchivedProjects((prev) => [{ ...project, archived: true }, ...prev]);
+      }
+      showToast("Project archived");
+    }
+  }
+
+  async function handleUnarchive(project: ProjectWithStats) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("projects")
+      .update({ archived: false })
+      .eq("id", project.id);
+    if (!error) {
+      setArchivedProjects((prev) => prev.filter((p) => p.id !== project.id));
+      setArchivedCount((c) => Math.max(0, c - 1));
+      setProjects((prev) => [...prev, { ...project, archived: false }]);
+      showToast("Project restored");
+    }
+  }
+
   async function handleDelete(project: ProjectWithStats) {
     const confirmed = window.confirm(
       `Delete "${project.name}"? All tasks in this project will also be deleted.`
@@ -108,7 +189,12 @@ export default function ProjectsBoard({
     const supabase = createClient();
     const { error } = await supabase.from("projects").delete().eq("id", project.id);
     if (!error) {
-      setProjects((prev) => prev.filter((p) => p.id !== project.id));
+      if (project.archived) {
+        setArchivedProjects((prev) => prev.filter((p) => p.id !== project.id));
+        setArchivedCount((c) => Math.max(0, c - 1));
+      } else {
+        setProjects((prev) => prev.filter((p) => p.id !== project.id));
+      }
     }
   }
 
@@ -183,12 +269,27 @@ export default function ProjectsBoard({
       {/* Main content */}
       <main className="flex-1 px-6 py-8 max-w-6xl w-full mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-base font-semibold text-stone-700 dark:text-stone-200">
-            My Projects
-            <span className="ml-2 text-xs font-normal text-stone-400 dark:text-stone-500">
-              {projects.length} {projects.length === 1 ? "project" : "projects"}
-            </span>
-          </h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-base font-semibold text-stone-700 dark:text-stone-200">
+              My Projects
+              <span className="ml-2 text-xs font-normal text-stone-400 dark:text-stone-500">
+                {projects.length} {projects.length === 1 ? "project" : "projects"}
+              </span>
+            </h1>
+
+            {archivedCount > 0 && (
+              <button
+                onClick={toggleShowArchived}
+                className="flex items-center gap-1.5 text-xs font-medium text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25-2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+                {showArchived ? "Hide archived" : `Show archived (${archivedCount})`}
+              </button>
+            )}
+          </div>
+
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-1.5 text-xs font-medium text-white bg-stone-800 dark:bg-stone-700 hover:bg-stone-700 dark:hover:bg-stone-600 px-3.5 py-2 rounded-lg transition-colors"
@@ -200,7 +301,8 @@ export default function ProjectsBoard({
           </button>
         </div>
 
-        {projects.length === 0 ? (
+        {/* Active projects */}
+        {projects.length === 0 && !showArchived ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4 select-none">
             <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
               <rect x="6" y="8" width="44" height="40" rx="4" fill="#e7e3dd" />
@@ -219,7 +321,7 @@ export default function ProjectsBoard({
               Create a project
             </button>
           </div>
-        ) : (
+        ) : projects.length > 0 ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={projects.map((p) => p.id)} strategy={rectSortingStrategy}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -229,12 +331,47 @@ export default function ProjectsBoard({
                     project={project}
                     onClick={() => router.push(`/projects/${project.id}`)}
                     onEdit={() => setEditTarget(project)}
+                    onArchive={() => handleArchive(project)}
                     onDelete={() => handleDelete(project)}
                   />
                 ))}
               </div>
             </SortableContext>
           </DndContext>
+        ) : null}
+
+        {/* Archived section */}
+        {showArchived && (
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide">
+                Archived
+              </h2>
+              <span className="text-xs text-stone-400 dark:text-stone-500 tabular-nums">
+                {archivedCount}
+              </span>
+            </div>
+
+            {archivedLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-5 h-5 rounded-full border-2 border-stone-300 dark:border-stone-600 border-t-stone-600 dark:border-t-stone-300 animate-spin" />
+              </div>
+            ) : archivedProjects.length === 0 ? (
+              <p className="text-xs text-stone-400 dark:text-stone-500 italic">No archived projects.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {archivedProjects.map((project) => (
+                  <ArchivedProjectCard
+                    key={project.id}
+                    project={project}
+                    onClick={() => router.push(`/projects/${project.id}`)}
+                    onUnarchive={() => handleUnarchive(project)}
+                    onDelete={() => handleDelete(project)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </main>
 
@@ -268,6 +405,14 @@ export default function ProjectsBoard({
             setDisplayName(name || null);
             setIsProfileModalOpen(false);
           }}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDone={() => setToast(null)}
         />
       )}
     </div>
