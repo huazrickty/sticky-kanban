@@ -22,6 +22,7 @@ import AddTaskModal from "./AddTaskModal";
 import EditProfileModal from "./EditProfileModal";
 import TaskDetailModal from "./TaskDetailModal";
 import ExportButton from "./ExportButton";
+import KeyboardHints from "./KeyboardHints";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "./ThemeProvider";
 
@@ -63,6 +64,47 @@ export default function KanbanBoard({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) return;
+
+      const anyModalOpen = isAddModalOpen || isProfileModalOpen || !!selectedTask;
+
+      if ((e.key === "n" || e.key === "N") && !anyModalOpen) {
+        setIsAddModalOpen(true);
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (isAddModalOpen) setIsAddModalOpen(false);
+        if (isProfileModalOpen) setIsProfileModalOpen(false);
+        if (selectedTask) setSelectedTask(null);
+        return;
+      }
+
+      if (selectedTask) {
+        const statusMap: Record<string, Task["status"]> = {
+          "1": "todo",
+          "2": "ongoing",
+          "3": "done",
+        };
+        const newStatus = statusMap[e.key];
+        if (newStatus && newStatus !== selectedTask.status) {
+          handleTaskUpdated({ ...selectedTask, status: newStatus });
+          setSelectedTask((prev) => prev ? { ...prev, status: newStatus } : prev);
+          const supabase = createClient();
+          supabase.from("tasks").update({ status: newStatus }).eq("id", selectedTask.id);
+        }
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isAddModalOpen, isProfileModalOpen, selectedTask]);
 
   const visibleName = displayName || userEmail;
   const avatarLetter = (displayName || userEmail).charAt(0).toUpperCase();
@@ -384,6 +426,9 @@ export default function KanbanBoard({
           </DragOverlay>
         </DndContext>
       ) : null}
+
+      {/* Keyboard hints */}
+      <KeyboardHints />
 
       {/* Export button */}
       <ExportButton tasks={tasks} categories={categories} projectName={projectName} />
