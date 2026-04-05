@@ -324,7 +324,7 @@ export default function ProjectsBoard({
         ) : projects.length > 0 ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={projects.map((p) => p.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-visible">
                 {projects.map((project) => (
                   <SortableProjectCard
                     key={project.id}

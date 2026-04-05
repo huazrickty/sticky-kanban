@@ -64,7 +64,7 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
     <div
       ref={setNodeRef}
       style={style}
-      className="group bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col overflow-hidden"
+      className="group bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col"
       onClick={onClick}
     >
       {/* Color accent border */}
@@ -169,7 +169,7 @@ export default function SortableProjectCard({ project, onEdit, onDelete, onArchi
 
             {menuOpen && (
               <div
-                className="absolute right-0 top-8 z-20 w-36 bg-white dark:bg-stone-800 rounded-xl shadow-lg border border-stone-100 dark:border-stone-700 py-1 overflow-hidden"
+                className="absolute right-0 top-full mt-1 z-50 w-36 bg-white dark:bg-stone-800 rounded-xl shadow-lg border border-stone-100 dark:border-stone-700 py-1 overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
