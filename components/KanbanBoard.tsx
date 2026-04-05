@@ -21,6 +21,7 @@ import StickyNote from "./StickyNote";
 import AddTaskModal from "./AddTaskModal";
 import EditProfileModal from "./EditProfileModal";
 import TaskDetailModal from "./TaskDetailModal";
+import ExportButton from "./ExportButton";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "./ThemeProvider";
 
@@ -383,6 +384,9 @@ export default function KanbanBoard({
           </DragOverlay>
         </DndContext>
       ) : null}
+
+      {/* Export button */}
+      <ExportButton tasks={tasks} categories={categories} projectName={projectName} />
 
       {/* FAB */}
       <button
