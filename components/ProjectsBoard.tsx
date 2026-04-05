@@ -52,19 +52,29 @@ function ProjectCard({ project, onEdit, onDelete, onClick }: ProjectCardProps) {
   const overdue = isOverdue(project.due_date);
   const { total, completed, percentage } = project;
 
+  const cardColor = project.color ?? "#E8E8E8";
+  const cardEmoji = project.emoji ?? "📋";
+
   return (
     <div
       onClick={onClick}
-      className="group bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col"
+      className="group bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col overflow-hidden"
+      style={{ borderLeft: `4px solid ${cardColor}` }}
     >
       {/* Top row: left info + right (circle + menu) */}
-      <div className="flex items-start justify-between gap-3 p-5">
+      <div
+        className="flex items-start justify-between gap-3 p-5"
+        style={{ backgroundColor: cardColor + "22" }}
+      >
 
-        {/* Left: name, due date, task count */}
+        {/* Left: emoji + name, due date, task count */}
         <div className="flex flex-col gap-2 min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-stone-800 dark:text-stone-100 leading-snug">
-            {project.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            <span style={{ fontSize: "28px", lineHeight: 1 }}>{cardEmoji}</span>
+            <h3 className="text-base font-semibold text-stone-800 dark:text-stone-100 leading-snug">
+              {project.name}
+            </h3>
+          </div>
 
           {project.due_date && (
             <div className="flex items-center gap-1.5">

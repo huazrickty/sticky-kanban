@@ -52,6 +52,8 @@ export default async function ProjectBoardPage({ params }: Props) {
       displayName={profile?.display_name ?? null}
       projectId={id}
       projectName={project.name}
+      projectEmoji={project.emoji ?? "📋"}
+      projectColor={project.color ?? "#E8E8E8"}
     />
   );
 }

@@ -9,9 +9,14 @@ interface Props {
   onSuccess: () => void;
 }
 
+const EMOJIS = ["📋", "📁", "🎯", "🚀", "💡", "🔧", "🎨", "📊", "📝", "🏆", "💻", "🔬", "🎵", "📱", "🌟", "⚡", "🎮", "📚", "🔑", "✅"];
+const COLORS = ["#FEF3A0", "#FAD9C4", "#FADADD", "#F9C6E0", "#E3DAFC", "#BFE3FA", "#C6E0FA", "#C8EBC6", "#D4F0E0", "#D0EDE8", "#F0E8D0", "#E8D5C4", "#D4D4F0", "#E8E8E8", "#F5E6D0"];
+
 export default function AddProjectModal({ userId, onClose, onSuccess }: Props) {
   const [name, setName] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [emoji, setEmoji] = useState("📋");
+  const [color, setColor] = useState("#E8E8E8");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -36,6 +41,8 @@ export default function AddProjectModal({ userId, onClose, onSuccess }: Props) {
       user_id: userId,
       name: name.trim(),
       due_date: dueDate || null,
+      emoji,
+      color,
     });
 
     if (error) {
@@ -87,6 +94,52 @@ export default function AddProjectModal({ userId, onClose, onSuccess }: Props) {
                 placeholder="e.g. Website Redesign"
                 className="w-full rounded-lg border border-stone-200 dark:border-stone-600 bg-stone-50 dark:bg-stone-800 px-3.5 py-2.5 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 outline-none focus:border-stone-400 dark:focus:border-stone-500 focus:ring-2 focus:ring-stone-200 dark:focus:ring-stone-700 transition"
               />
+            </div>
+
+            {/* Emoji */}
+            <div className="space-y-1.5">
+              <span className="block text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wide">
+                Icon
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {EMOJIS.map((e) => (
+                  <button
+                    key={e}
+                    type="button"
+                    onClick={() => setEmoji(e)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-lg transition-all"
+                    style={{
+                      background: emoji === e ? (color + "66") : "transparent",
+                      outline: emoji === e ? `2px solid ${color === "#E8E8E8" ? "#a8a29e" : color}` : "2px solid transparent",
+                    }}
+                  >
+                    {e}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Color */}
+            <div className="space-y-1.5">
+              <span className="block text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wide">
+                Color
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(c)}
+                    className="w-6 h-6 rounded-full transition-transform hover:scale-110"
+                    style={{
+                      backgroundColor: c,
+                      outline: color === c ? "2px solid #78716c" : "2px solid transparent",
+                      outlineOffset: "2px",
+                    }}
+                    aria-label={c}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Due date */}

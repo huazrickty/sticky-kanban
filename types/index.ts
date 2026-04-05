@@ -4,6 +4,8 @@ export type Project = {
   name: string;
   due_date: string | null;
   created_at: string;
+  color?: string | null;
+  emoji?: string | null;
 };
 
 export type Task = {

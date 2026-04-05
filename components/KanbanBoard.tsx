@@ -40,6 +40,8 @@ interface Props {
   displayName: string | null;
   projectId: string;
   projectName: string;
+  projectEmoji?: string;
+  projectColor?: string;
 }
 
 export default function KanbanBoard({
@@ -50,6 +52,8 @@ export default function KanbanBoard({
   displayName: initialDisplayName,
   projectId,
   projectName,
+  projectEmoji = "📋",
+  projectColor = "#E8E8E8",
 }: Props) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
@@ -245,9 +249,17 @@ export default function KanbanBoard({
             <span className="hidden sm:inline">Projects</span>
           </button>
           <span className="text-stone-300 dark:text-stone-600 select-none">/</span>
-          <span className="text-sm font-semibold text-stone-700 dark:text-stone-200 truncate">
-            {projectName}
-          </span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span
+              className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-sm"
+              style={{ backgroundColor: projectColor + "55" }}
+            >
+              {projectEmoji}
+            </span>
+            <span className="text-sm font-semibold text-stone-700 dark:text-stone-200 truncate">
+              {projectName}
+            </span>
+          </div>
         </div>
 
         {/* Right: nav actions */}
