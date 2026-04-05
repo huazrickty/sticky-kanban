@@ -24,7 +24,7 @@ export default async function ProjectsPage() {
         .from("projects")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
+        .order("position", { ascending: true }),
       supabase
         .from("profiles")
         .select("display_name")

@@ -6,6 +6,7 @@ export type Project = {
   created_at: string;
   color?: string | null;
   emoji?: string | null;
+  position?: number | null;
 };
 
 export type Task = {
