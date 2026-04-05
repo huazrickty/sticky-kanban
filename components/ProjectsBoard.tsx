@@ -22,6 +22,7 @@ import EditProfileModal from "./EditProfileModal";
 import SortableProjectCard from "./SortableProjectCard";
 import ArchivedProjectCard from "./ArchivedProjectCard";
 import Toast from "./Toast";
+import TutorialModal from "./TutorialModal";
 
 interface Props {
   initialProjects: ProjectWithStats[];
@@ -29,6 +30,7 @@ interface Props {
   userEmail: string;
   displayName: string | null;
   initialArchivedCount: number;
+  showTutorial: boolean;
 }
 
 export default function ProjectsBoard({
@@ -37,6 +39,7 @@ export default function ProjectsBoard({
   userEmail,
   displayName: initialDisplayName,
   initialArchivedCount,
+  showTutorial,
 }: Props) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
@@ -51,6 +54,7 @@ export default function ProjectsBoard({
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
+  const [tutorialOpen, setTutorialOpen] = useState(showTutorial);
 
   const visibleName = displayName || userEmail;
   const avatarLetter = (displayName || userEmail).charAt(0).toUpperCase();
@@ -220,6 +224,18 @@ export default function ProjectsBoard({
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
             </svg>
             <span className="hidden md:inline text-xs font-medium">Categories</span>
+          </button>
+
+          {/* Help */}
+          <button
+            onClick={() => setTutorialOpen(true)}
+            className="text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors"
+            title="Help"
+            aria-label="Help"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+            </svg>
           </button>
 
           {/* Theme toggle */}
@@ -413,6 +429,13 @@ export default function ProjectsBoard({
           message={toast.message}
           type={toast.type}
           onDone={() => setToast(null)}
+        />
+      )}
+
+      {tutorialOpen && (
+        <TutorialModal
+          userId={userId}
+          onClose={() => setTutorialOpen(false)}
         />
       )}
     </div>

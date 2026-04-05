@@ -28,7 +28,7 @@ export default async function ProjectsPage() {
         .order("position", { ascending: true }),
       supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, show_tutorial")
         .eq("id", user.id)
         .single(),
       supabase
@@ -57,6 +57,7 @@ export default async function ProjectsPage() {
       userEmail={user.email ?? ""}
       displayName={profile?.display_name ?? null}
       initialArchivedCount={archivedCount ?? 0}
+      showTutorial={profile?.show_tutorial ?? false}
     />
   );
 }
